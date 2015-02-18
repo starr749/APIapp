@@ -1,14 +1,14 @@
 package com.example
 
+import java.net.URI
+import java.sql.{Connection, DriverManager}
+
+import com.twitter.finagle.http.Response
 import com.twitter.finagle.{Http, Service}
 import com.twitter.util.{Await, Future}
-import com.twitter.finagle.http.Response
-import java.net.InetSocketAddress
 import org.jboss.netty.handler.codec.http._
-import util.Properties
-import java.net.URI
-import java.sql.Connection
-import java.sql.DriverManager
+
+import scala.util.Properties
 
 object Server {
   def main(args: Array[String]) {
@@ -38,28 +38,32 @@ class Hello extends Service[HttpRequest, HttpResponse] {
 
   def showDatabase(request: HttpRequest): Future[HttpResponse] = {
     val connection = getConnection
-    val stmt = connection.createStatement
-    stmt.executeUpdate("CREATE TABLE IF NOT EXISTS ticks (tick timestamp)")
-    stmt.executeUpdate("INSERT INTO ticks VALUES (now())")
+    try {
+      val stmt = connection.createStatement
+      stmt.executeUpdate("CREATE TABLE IF NOT EXISTS ticks (tick timestamp)")
+      stmt.executeUpdate("INSERT INTO ticks VALUES (now())")
 
-    val rs = stmt.executeQuery("SELECT tick FROM ticks")
+      val rs = stmt.executeQuery("SELECT tick FROM ticks")
 
-    var out = ""
-    while (rs.next) {
-      out += "Read from DB: " + rs.getTimestamp("tick") + "\n"
+      var out = ""
+      while (rs.next) {
+        out += "Read from DB: " + rs.getTimestamp("tick") + "\n"
+      }
+
+      val response = Response()
+      response.setStatusCode(200)
+      response.setContentString(out)
+      Future(response)
+    } finally {
+      connection.close()
     }
-
-    val response = Response()
-    response.setStatusCode(200)
-    response.setContentString(out)
-    Future(response)
   }
 
   def getConnection(): Connection = {
     val dbUri = new URI(System.getenv("DATABASE_URL"))
     val username = dbUri.getUserInfo.split(":")(0)
     val password = dbUri.getUserInfo.split(":")(1)
-    val dbUrl = "jdbc:postgresql://" + dbUri.getHost + dbUri.getPath
+    val dbUrl = s"jdbc:postgresql://${dbUri.getHost}:${dbUri.getPort}${dbUri.getPath}"
     DriverManager.getConnection(dbUrl, username, password)
   }
 }
