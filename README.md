@@ -4,6 +4,8 @@ Basic Scala Server with a basic API
 
 The goal of this app is to show come competency with PatternMatching and List Comprehensions
 
+Also built with the idea that using a framework like play or spray would be cheating :P
+
 ## Not completely working
 
 So I did not realize how hard it was to Serialize complex datatypes into JSON in scala, so I am just returning my data in a basic string
