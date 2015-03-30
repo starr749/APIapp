@@ -22,10 +22,10 @@ object Server {
 
 class Hello extends Service[HttpRequest, HttpResponse] {
   def apply(request: HttpRequest): Future[HttpResponse] = {
-    if (request.getUri.endsWith("/db")) {
-      showDatabase(request);
+    if (request.getUri.endsWith("/")) {
+      showHome(request)
     } else {
-      showHome(request);
+      processRequest(request);
     }
   }
 
@@ -36,34 +36,11 @@ class Hello extends Service[HttpRequest, HttpResponse] {
     Future(response)
   }
 
-  def showDatabase(request: HttpRequest): Future[HttpResponse] = {
-    val connection = getConnection
-    try {
-      val stmt = connection.createStatement
-      stmt.executeUpdate("CREATE TABLE IF NOT EXISTS ticks (tick timestamp)")
-      stmt.executeUpdate("INSERT INTO ticks VALUES (now())")
-
-      val rs = stmt.executeQuery("SELECT tick FROM ticks")
-
-      var out = ""
-      while (rs.next) {
-        out += "Read from DB: " + rs.getTimestamp("tick") + "\n"
-      }
-
-      val response = Response()
-      response.setStatusCode(200)
-      response.setContentString(out)
-      Future(response)
-    } finally {
-      connection.close()
-    }
-  }
-
-  def getConnection(): Connection = {
-    val dbUri = new URI(System.getenv("DATABASE_URL"))
-    val username = dbUri.getUserInfo.split(":")(0)
-    val password = dbUri.getUserInfo.split(":")(1)
-    val dbUrl = s"jdbc:postgresql://${dbUri.getHost}:${dbUri.getPort}${dbUri.getPath}"
-    DriverManager.getConnection(dbUrl, username, password)
+  def processRequest(request: HttpRequest): Future[HttpResponse] = {
+    val response = Response()
+    val (resCode, data) = Router.route(request.getMethod.toString, request.getUri)
+    response.setStatusCode(resCode)
+    response.setContentString(data)
+    Future(response)
   }
 }
