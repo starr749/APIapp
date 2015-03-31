@@ -6,13 +6,22 @@ package com.example
 
 // Defining my own Router here. Using some basic Pattern Matching to direct Get Requests
 object Router {
+
+  // This is a map where we can store our routes
+  // In a framework, we'd load this from like a 'routes' file like in Rails of Django
+  // I'm storing it in a Map here because I think it shows how the pattern works better
+  val routes = Map(
+  "/all"      -> Controller.allData _,
+  "/company"  -> Controller.filterCompany _,
+  "/avg"      -> Controller.averageData _,
+  "/sum"      -> Controller.sumData _,
+  "/groupavg" -> Controller.averageGroup _
+  )
+
+  // The routes Map make the router object pretty small, and easy to understand
   def route(method: String, uri:String) : (Int, String) = (method, uri) match {
-    case("GET", "/all") => Controller.allData()
-    case("GET", uri) if (uri.startsWith("/company/")) => Controller.filterCompany(method, uri)
-    case("GET", uri) if (uri.contains("/avg")) => Controller.averageData(method, uri)
-    case("GET", uri) if (uri.contains("/sum")) => Controller.sumData(method, uri)
-    case("GET", uri) if (uri.contains("/groupavg")) => Controller.averageGroup(method, uri)
-    case _ => (401, "No resource Found")
+    case("GET", uri) if (routes.keySet.exists(_ == uri.toString)) => routes.get(uri).get(method, uri)
+    case _ => (401, "Resource Not Found")
   }
 }
 
@@ -57,7 +66,7 @@ object Controller {
   }
 
   // Return the complete Data object
-  def allData(): (Int, String) = {
+  def allData(method:String, uri:String): (Int, String) = {
     return (200, data.toString())
   }
 
