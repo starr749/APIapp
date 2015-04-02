@@ -1,5 +1,8 @@
 package com.example
 
+import spray.json._
+import DefaultJsonProtocol._
+
 /**
  * Created by Sidus on 3/29/2015.
  */
@@ -67,14 +70,14 @@ object Controller {
 
   // Return the complete Data object
   def allData(method:String, uri:String): (Int, String) = {
-    return (200, data.toString())
+    return (200, data.toJson.prettyPrint)
   }
 
   // Return data object with averaged data over the the "unit of time"
   def averageGroup(method:String, uri:String): (Int, String) = {
     val avgData = group_avg(data)
 
-    return (200, avgData.toString)
+    return (200, avgData.toJson.prettyPrint)
   }
 
   // Filter Data by Company. Originally I wanted to chain this method with others,
@@ -82,19 +85,19 @@ object Controller {
   def filterCompany(method: String, uri: String): (Int, String) = {
     val company = uri.replace("/company/", "")
     val filter = Map(company -> data.get(company))
-    return (200, filter.toString())
+    return (200, filter.toJson.prettyPrint)
   }
 
   // This returns averaged data
   def averageData(method: String, uri: String): (Int, String) = {
     val avgData:Map[String, Double] = calc_avg(data)
 
-    return (200, avgData.toString)
+    return (200, avgData.toJson.prettyPrint)
   }
   // iterates, returns sum of every 'company'
   def sumData(method:String, uri: String): (Int, String) = {
     val sumData:Map[String, Double] = (for ((key, value) <- data) yield key -> (sum(value) ))
 
-    return (200, sumData.toString)
+    return (200, sumData.toJson.prettyPrint)
   }
 }
