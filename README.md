@@ -6,9 +6,10 @@ The goal of this app is to show come competency with PatternMatching and List Co
 
 Also built with the idea that using a framework like play or spray would be cheating :P
 
-## Not completely working
+## Now returning JSON
 
-So I did not realize how hard it was to Serialize complex datatypes into JSON in scala, so I am just returning my data in a basic string
+So it seems that spray wins the easiest way to serialize nested data type award.
+Now data is returned using spray's toJson.prettyprint method.
 
 ## What the data looks like
 
@@ -21,16 +22,13 @@ So a data would look like:
 "Company Name" -> ( ("UnitOfTime", Double), ("AnotherUnitOfTime", Double) )
 
 The Idea was to pipe this date into a D3.js Graph, since they like data formatted like this.
-Because I couldn't figure out JSON serialization in time I did not get that far, however.
 
 The Idea is that this is a Weekday Ticker of some value, maybe profit, maybe expense. The 'UnitOfTime' being repeated.
 This works best for a day of the week or a month.
 
-So returning, for exameple, an average of every "June" expense would look interesting on a graph.\
+So returning, for exameple, an average of every "June" expense would look interesting on a graph.
 
 I chose such a complex data type because I feel like it best represents something that could be retrieved quickly from say, a Redis instance.
-
-I am so used to Python I did not realize the pain that it takes to Serialize nested data structures.
 
 ## API Calls
 
